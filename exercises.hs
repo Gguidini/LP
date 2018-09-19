@@ -18,10 +18,17 @@ intersec a b = [x | x <- a, x `elem` b]
 union_list :: [a] -> [a] -> [a]
 union_list a b = a ++ b
 
+-- internal function to remove repeated elements from list
+unique :: (Eq a) => [a] -> [a]
+unique [] = []
+unique (a:as)
+    | a `elem` as = unique as
+    | otherwise = a : unique as
+
 -- union of two lists
 -- without repetition
 union_set :: (Eq a) => [a] -> [a] -> [a]
-union_set a b = a ++ (diff b a)
+union_set a b = unique $ a ++ b
 
 -- returns last value of list
 last_el :: (Eq a) => [a] -> a
@@ -44,14 +51,16 @@ rev (x:xs) = rev xs ++ [x]
 -- order list in decresing order removing replicates
 sort_down :: (Eq a, Ord a) =>[a] -> [a]
 sort_down [] = []
-sort_down (x:xs)
-    | x `elem` xs = sort_down xs
-    | not $ x `elem` xs = (sort_down [h | h <- xs, h > x]) ++ [x] ++ [e | e <- xs, e == x] ++ (sort_down [l | l <- xs, l < x])
+sort_down (x:xs) = (sort_down [h | h <- xs, h > x]) ++ [x] ++ (sort_down [l | l <- xs, l < x])
 
--- sorts list
+-- sorts list using recursion
 qsort ::  (Ord a) => [a] -> [a]
 qsort [] = []
 qsort (x:xs) = (qsort [l | l <- xs, l < x]) ++ [x] ++ [e | e <- xs, e == x] ++ (qsort [h | h <- xs, h > x])
+
+-- Checks if list is in decreasing order using higher order functions
+is_decreasing' :: (Ord a) => [a] -> Bool
+is_decreasing' l = foldl1 (&&) (map (\(a,b) -> a >= b) (zip l (tail l)))
 
 -- returns wether list is in decreasing order
 is_decreasing :: (Ord a) => [a] -> Bool
@@ -87,5 +96,8 @@ test_7 = TestCase (assertEqual "Reverse" a ((rev . rev) a))
 test_8 = TestCase (assertEqual "QSort" [-5, 0, 1, 2, 5, 10] (qsort fuzzy))
 test_9 = TestCase (assertEqual "SortDown" [3,2,1] (sort_down rep_low))
 test_10 = TestCase (assertBool "Decreasing order - Recursive" ((is_decreasing . sort_down) fuzzy))
+test_11 = TestCase (assertEqual "Union Without Repetition - Repeating Lists" [1,2,3,4,5] (union_set rep_low rep_high))
+test_12 = TestCase (assertBool "QSort using Higher Order Functions" (is_decreasing' $ sort_down fuzzy))
 
-tests = TestList [test_1, test_2, test_3, test_4, test_5, test_6, test_7, test_8, test_9, test_10]
+-- Tests to run
+tests = TestList [test_1, test_2, test_3, test_4, test_5, test_6, test_7, test_8, test_9, test_10, test_11, test_12]
