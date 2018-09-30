@@ -1,4 +1,4 @@
-module Exercises where 
+module Exercises.Lists where 
 
 -- tests are defined at the end of the file to test implementations
 import Test.HUnit
